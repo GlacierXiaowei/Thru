@@ -29,7 +29,7 @@ pub fn handle_status(json: bool) -> Result<()> {
         let data = StatusJson {
             ssh_server: SshStatusJson {
                 status: if ssh.running { "running".to_string() } else { "stopped".to_string() },
-                port: 22,
+                port: ssh.port,
             },
             tailscale: TailscaleStatusJson {
                 status: if ts.is_some() { "connected".to_string() } else { "not_running".to_string() },

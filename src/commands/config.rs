@@ -41,3 +41,11 @@ pub fn handle_set_alias(ip: &str, alias: &str) -> Result<()> {
     println!("✓ 设备别名已设置：{} → {}", ip, alias);
     Ok(())
 }
+
+pub fn handle_set_user(user: &str) -> Result<()> {
+    let mut config = load_config()?;
+    config.device.phone_user = user.to_string();
+    save_config(&config)?;
+    println!("✓ 手机用户已设置为：{}", user);
+    Ok(())
+}

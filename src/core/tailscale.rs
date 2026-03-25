@@ -13,6 +13,7 @@ pub struct TailscaleStatus {
 #[derive(Debug, Deserialize)]
 pub struct TailscaleDevice {
     #[serde(rename = "DNSName")]
+    #[allow(dead_code)]
     pub dns_name: String,
     #[serde(rename = "TailscaleIPs")]
     pub tailscale_ips: Vec<String>,
