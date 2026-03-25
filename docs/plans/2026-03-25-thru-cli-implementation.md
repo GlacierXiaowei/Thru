@@ -10,6 +10,87 @@
 
 ---
 
+## 完成状态 (2026-03-25)
+
+### Phase 1 实现 ✅ 完成
+
+| Task | 功能 | 状态 |
+|------|------|------|
+| 1 | 创建 Rust 项目 | ✅ |
+| 2 | 配置管理模块 | ✅ |
+| 3 | config 子命令 | ✅ |
+| 4 | SSH 状态检测 | ✅ |
+| 5 | SSH start/stop | ✅ |
+| 6 | send 文件传输 | ✅ |
+| 7 | list 命令 | ✅ |
+| 8 | receive 文件监控 | ✅ |
+| 9 | history 命令 | ✅ |
+| 10 | Tailscale 设备识别 | ✅ |
+| 11 | --json 输出 | ✅ |
+| 12 | 最终测试 | ✅ |
+
+### Bug 修复 (2026-03-25) ✅ 完成
+
+| 修复项 | 描述 |
+|--------|------|
+| help 说明 | 给每个命令添加中文说明 |
+| 编译警告 | 消除所有警告 (0 warnings) |
+| config set-user | 新增设置用户名命令 |
+| history 记录 | send 成功后写入历史 |
+| 发送路径 | 改为 ~/storage/downloads/Thru/ |
+| SSH 错误处理 | 检测服务是否存在，友好提示 |
+| Ctrl+C 退出 | 优雅退出，显示 "👋 已停止" |
+
+### Git 提交记录
+
+```
+a5884d6 fix: 修复用户反馈的问题
+(前一个提交) feat: Thru CLI v0.1.0 实现完成
+```
+
+### 项目结构
+
+```
+src/
+├── main.rs              # CLI 入口，命令定义
+├── lib.rs               # 模块导出
+├── commands/
+│   ├── config.rs        # config show/set-ip/get-ip/set-user/set-alias
+│   ├── status.rs        # status (普通/JSON模式)
+│   ├── start.rs         # 启动 SSH Server
+│   ├── stop.rs          # 停止 SSH Server
+│   ├── send.rs          # 发送文件
+│   ├── receive.rs       # 接收/监控文件
+│   ├── list.rs          # 列出已接收文件
+│   └── history.rs       # 传输历史
+├── core/
+│   ├── config.rs        # Config 结构体，load/save
+│   ├── ssh_manager.rs   # SSH 状态检测和控制
+│   ├── tailscale.rs     # Tailscale 设备识别
+│   ├── transfer.rs      # SCP 文件传输
+│   ├── file_watcher.rs  # 文件监控
+│   └── history.rs       # 历史记录管理
+└── utils/
+    └── output.rs        # JSON 输出工具
+```
+
+### 依赖库
+
+```toml
+clap = { version = "4.5", features = ["derive"] }
+serde = { version = "1.0", features = ["derive"] }
+toml = "0.8"
+notify = "6.1"
+serde_json = "1.0"
+chrono = { version = "0.4", features = ["serde"] }
+dirs = "5.0"
+anyhow = "1.0"
+thiserror = "2.0"
+ctrlc = "3.4"
+```
+
+---
+
 ## Phase 1.1: 项目初始化
 
 ### Task 1: 创建 Rust 项目
