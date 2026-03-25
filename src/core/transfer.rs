@@ -27,11 +27,11 @@ pub fn send_file(config: &Config, file_path: &str, recursive: bool) -> Result<()
 
     println!("📤 正在发送 {}...", file_path);
 
-    let output = Command::new("scp")
+    let status = Command::new("scp")
         .args(&args)
-        .output()?;
+        .status()?;
 
-    if output.status.success() {
+    if status.success() {
         println!("✓ 发送成功");
         
         // 记录历史
@@ -68,8 +68,7 @@ pub fn send_file(config: &Config, file_path: &str, recursive: bool) -> Result<()
             eprintln!("警告: 无法保存历史记录: {}", e);
         }
     } else {
-        let stderr = String::from_utf8_lossy(&output.stderr);
-        println!("✗ 发送失败: {}", stderr);
+        println!("✗ 发送失败");
     }
 
     Ok(())
