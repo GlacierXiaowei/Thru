@@ -1,1 +1,1 @@
-D:\冰川小未\微信开发者\项目文件\Thru\target\debug\libthru.rlib: D:\冰川小未\微信开发者\项目文件\Thru\src\commands\mod.rs D:\冰川小未\微信开发者\项目文件\Thru\src\core\mod.rs D:\冰川小未\微信开发者\项目文件\Thru\src\lib.rs D:\冰川小未\微信开发者\项目文件\Thru\src\utils\mod.rs
+D:\冰川小未\微信开发者\项目文件\Thru\target\debug\libthru.rlib: D:\冰川小未\微信开发者\项目文件\Thru\src\commands\config.rs D:\冰川小未\微信开发者\项目文件\Thru\src\commands\mod.rs D:\冰川小未\微信开发者\项目文件\Thru\src\core\config.rs D:\冰川小未\微信开发者\项目文件\Thru\src\core\mod.rs D:\冰川小未\微信开发者\项目文件\Thru\src\lib.rs D:\冰川小未\微信开发者\项目文件\Thru\src\utils\mod.rs
