@@ -7,15 +7,29 @@ use chrono::Local;
 use anyhow::Result;
 
 pub fn send_file(config: &Config, file_path: &str, recursive: bool) -> Result<()> {
-    let dest = format!(
-        "{}@{}:~/storage/downloads/Thru/",
-        config.device.phone_user,
-        config.device.phone_ip
-    );
+    let user = &config.device.phone_user;
+    let ip = &config.device.phone_ip;
+    let port = config.device.phone_port;
+    let dest_dir = "~/storage/downloads/Thru/";
+
+    println!("📁 确保目标目录存在...");
+    let mkdir_status = Command::new("ssh")
+        .args([
+            "-p", &port.to_string(),
+            &format!("{}@{}", user, ip),
+            "mkdir -p ~/storage/downloads/Thru/"
+        ])
+        .status()?;
+    
+    if !mkdir_status.success() {
+        println!("⚠ 无法创建目录，尝试继续发送...");
+    }
+
+    let dest = format!("{}@{}:{}", user, ip, dest_dir);
 
     let mut args = vec![
         "-P".to_string(),
-        config.device.phone_port.to_string(),
+        port.to_string(),
     ];
 
     if recursive {
