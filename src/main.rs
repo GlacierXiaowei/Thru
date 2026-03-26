@@ -76,6 +76,21 @@ enum ConfigAction {
     SetAlias { ip: String, name: String },
     /// 自动检测设备
     AutoDetect,
+    /// 生成 SSH 密钥对
+    Keygen {
+        /// 强制覆盖现有密钥
+        #[arg(short, long)]
+        force: bool,
+        /// JSON 格式输出
+        #[arg(long)]
+        json: bool,
+    },
+    /// 部署公钥到手机
+    KeyCopy {
+        /// JSON 格式输出
+        #[arg(long)]
+        json: bool,
+    },
 }
 
 fn main() -> Result<()> {
@@ -94,6 +109,8 @@ fn main() -> Result<()> {
             ConfigAction::SetUser { user } => commands::config::handle_set_user(&user)?,
             ConfigAction::SetAlias { ip, name } => commands::config::handle_set_alias(&ip, &name)?,
             ConfigAction::AutoDetect => println!("Auto-detect 未实现"),
+            ConfigAction::Keygen { force, json } => commands::config::handle_keygen(force, json)?,
+            ConfigAction::KeyCopy { json } => commands::config::handle_key_copy(json)?,
         },
         Some(Commands::Status { json }) => commands::status::handle_status(json)?,
         Some(Commands::Start) => commands::start::handle_start()?,

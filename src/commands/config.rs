@@ -1,4 +1,5 @@
 use crate::core::config::{load_config, save_config};
+use crate::core::ssh_key;
 use anyhow::Result;
 
 pub fn handle_show() -> Result<()> {
@@ -17,6 +18,73 @@ pub fn handle_show() -> Result<()> {
             println!("  {} → {}", ip, alias);
         }
     }
+    Ok(())
+}
+
+pub fn handle_keygen(force: bool, json: bool) -> Result<()> {
+    if ssh_key::key_exists() && !force {
+        if json {
+            println!("{}", serde_json::json!({
+                "success": false,
+                "error": "key_exists",
+                "message": "SSH 密钥已存在，使用 --force 覆盖"
+            }));
+            return Ok(());
+        }
+        println!("SSH 密钥已存在: {}", ssh_key::get_key_path().display());
+        println!("使用 --force 覆盖现有密钥");
+        return Ok(());
+    }
+    
+    if force && ssh_key::key_exists() {
+        let _ = std::fs::remove_file(ssh_key::get_key_path());
+        let _ = std::fs::remove_file(ssh_key::get_pub_key_path());
+    }
+    
+    ssh_key::generate_key()?;
+    
+    let info = ssh_key::get_key_info()?;
+    
+    if json {
+        println!("{}", serde_json::to_string_pretty(&serde_json::json!({
+            "success": true,
+            "private_key": info.private_key,
+            "public_key": info.public_key,
+            "public_key_content": info.public_key_content
+        }))?);
+    } else {
+        println!("✓ 密钥已生成: {}", info.private_key);
+        println!("✓ 公钥位置: {}", info.public_key);
+    }
+    
+    Ok(())
+}
+
+pub fn handle_key_copy(json: bool) -> Result<()> {
+    let info = ssh_key::get_key_info()?;
+    
+    if !info.exists {
+        anyhow::bail!("请先运行 thru config keygen 生成密钥");
+    }
+    
+    if json {
+        println!("{}", serde_json::to_string_pretty(&serde_json::json!({
+            "success": true,
+            "method": "manual",
+            "public_key": info.public_key_content,
+            "instructions": format!("echo \"{}\" >> ~/.ssh/authorized_keys", info.public_key_content)
+        }))?);
+        return Ok(());
+    }
+    
+    println!("请在手机上执行以下命令：");
+    println!("─────────────────────────────────");
+    println!("mkdir -p ~/.ssh");
+    println!("echo \"{}\" >> ~/.ssh/authorized_keys", info.public_key_content);
+    println!("chmod 600 ~/.ssh/authorized_keys");
+    println!("─────────────────────────────────");
+    println!("\n完成后，即可免密登录！");
+    
     Ok(())
 }
 
