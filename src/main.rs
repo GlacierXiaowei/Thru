@@ -57,6 +57,23 @@ enum Commands {
         #[arg(long)]
         json: bool,
     },
+    /// 从手机拉取文件
+    Pull {
+        /// 要拉取的文件名
+        file: Option<String>,
+        /// 列出远程文件
+        #[arg(short, long)]
+        list: bool,
+        /// 拉取全部文件
+        #[arg(short, long)]
+        all: bool,
+        /// 保存目录
+        #[arg(short, long)]
+        output: Option<String>,
+        /// JSON 格式输出
+        #[arg(long)]
+        json: bool,
+    },
     /// 接收手机发送的文件
     Receive {
         /// 实时监控新文件
@@ -145,6 +162,9 @@ fn main() -> Result<()> {
         Some(Commands::Stop) => commands::stop::handle_stop()?,
         Some(Commands::Send { file, recursive, rsync, scp, json }) => {
             commands::send::handle_send(&file, recursive, rsync, scp, json)?;
+        }
+        Some(Commands::Pull { file, list, all, output, json }) => {
+            commands::pull::handle_pull(file, list, all, output, json)?;
         }
         Some(Commands::Receive { watch }) => commands::receive::handle_receive(watch)?,
         Some(Commands::List { all }) => commands::list::handle_list(all)?,
