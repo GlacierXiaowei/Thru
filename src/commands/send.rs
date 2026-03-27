@@ -29,7 +29,24 @@ fn handle_lan_send(file: &str, addr: Option<&str>, json: bool, no_fallback: bool
     let (ip, port) = if let Some(addr_str) = addr {
         parse_lan_address(addr_str)?
     } else {
-        select_device(5)?
+        match select_device(5) {
+            Ok(result) => result,
+            Err(_) => {
+                if !json {
+                    println!("⚠ 未发现设备，尝试 SSH 发送...");
+                }
+                
+                if !no_fallback {
+                    if let Ok(config) = load_config() {
+                        if !config.device.phone_ip.is_empty() {
+                            return send_via_ssh(&config, file, json);
+                        }
+                    }
+                }
+                
+                anyhow::bail!("未发现设备且未配置手机 IP\n提示: 运行 thru init 配置手机");
+            }
+        }
     };
     
     let rt = tokio::runtime::Runtime::new()?;
@@ -60,7 +77,7 @@ fn select_device(timeout: u64) -> Result<(String, u16)> {
     let devices = Discovery::discover(timeout)?;
     
     if devices.is_empty() {
-        anyhow::bail!("未发现任何设备\n提示：请确保目标设备已运行 thru serve");
+        anyhow::bail!("未发现任何设备");
     }
     
     if devices.len() == 1 {
@@ -106,22 +123,28 @@ async fn send_with_fallback(ip: &str, port: u16, file: &str, json: bool) -> Resu
     
     if let Ok(config) = load_config() {
         if !config.device.phone_ip.is_empty() {
-            if !json {
-                println!("🔄 尝试 rsync...");
-            }
-            
-            if try_rsync(&config, file, json)? {
-                return Ok(());
-            }
-            
-            if !json {
-                println!("🔄 尝试 scp...");
-            }
-            
-            if try_scp(&config, file, json)? {
-                return Ok(());
-            }
+            return send_via_ssh(&config, file, json);
         }
+    }
+    
+    anyhow::bail!("HTTP 发送失败且未配置手机 IP")
+}
+
+fn send_via_ssh(config: &Config, file: &str, json: bool) -> Result<()> {
+    if !json {
+        println!("🔄 尝试 rsync...");
+    }
+    
+    if try_rsync(config, file, json)? {
+        return Ok(());
+    }
+    
+    if !json {
+        println!("🔄 尝试 scp...");
+    }
+    
+    if try_scp(config, file, json)? {
+        return Ok(());
     }
     
     anyhow::bail!("所有传输方式都失败")

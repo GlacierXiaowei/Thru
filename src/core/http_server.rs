@@ -18,19 +18,7 @@ pub struct HttpServer {
     port: u16,
 }
 
-#[derive(Debug, serde::Serialize)]
-pub struct ServerInfo {
-    pub name: String,
-    pub version: String,
-    pub device_id: String,
-    pub port: u16,
-}
-
 impl HttpServer {
-    pub fn new() -> Self {
-        Self { port: DEFAULT_PORT }
-    }
-
     pub fn with_port(port: u16) -> Self {
         Self { port }
     }
@@ -62,8 +50,6 @@ impl HttpServer {
             }
             Err(e) => anyhow::bail!("无法绑定任何端口: {}", e),
         };
-
-        let actual_port = listener.local_addr()?.port();
         
         axum::serve(listener, app).await?;
         
