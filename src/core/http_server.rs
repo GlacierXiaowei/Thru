@@ -7,6 +7,8 @@ use axum::{
 };
 use serde_json::json;
 use std::net::SocketAddr;
+use std::path::PathBuf;
+use std::sync::Arc;
 use tokio::net::TcpListener;
 use anyhow::Result;
 
@@ -55,6 +57,52 @@ impl HttpServer {
         
         Ok(())
     }
+
+    pub async fn start_receive_mode(&self, json: bool) -> Result<()> {
+        let save_dir: PathBuf = dirs::download_dir()
+            .unwrap_or_else(|| PathBuf::from("."))
+            .join("Thru");
+        
+        std::fs::create_dir_all(&save_dir)?;
+        
+        let save_dir = Arc::new(save_dir);
+        let json_mode = json;
+        
+        let app = Router::new()
+            .route("/upload", post(move |multipart: Multipart| {
+                let save_dir = save_dir.clone();
+                async move {
+                    receive_upload(multipart, save_dir, json_mode).await
+                }
+            }))
+            .route("/device", get(device_info));
+        
+        let addr = SocketAddr::from(([0, 0, 0, 0], self.port));
+        
+        let listener = match TcpListener::bind(addr).await {
+            Ok(l) => {
+                if !json {
+                    println!("🌐 接收服务已启动");
+                    println!("  地址: http://0.0.0.0:{}", self.port);
+                    println!("  保存到: ~/Downloads/Thru/");
+                    println!("  按 Ctrl+C 停止");
+                    println!();
+                }
+                l
+            }
+            Err(_) => {
+                let backup_addr = SocketAddr::from(([0, 0, 0, 0], BACKUP_PORT_1));
+                if !json {
+                    println!("⚠ 端口 {} 已被占用，使用端口 {}...", self.port, BACKUP_PORT_1);
+                }
+                TcpListener::bind(backup_addr).await?
+            }
+        };
+        
+        axum::serve(listener, app).await?;
+        
+        Ok(())
+    }
 }
 
 async fn root() -> Json<serde_json::Value> {
@@ -71,6 +119,37 @@ async fn upload(mut multipart: Multipart) -> Result<StatusCode, StatusCode> {
         let data = field.bytes().await.map_err(|_| StatusCode::BAD_REQUEST)?;
         
         println!("📥 收到文件: {} ({} bytes)", name, data.len());
+    }
+    
+    Ok(StatusCode::OK)
+}
+
+async fn receive_upload(
+    mut multipart: Multipart,
+    save_dir: Arc<PathBuf>,
+    json: bool,
+) -> Result<StatusCode, StatusCode> {
+    while let Some(field) = multipart.next_field().await.map_err(|_| StatusCode::BAD_REQUEST)? {
+        let name = field.file_name().unwrap_or("unknown").to_string();
+        let data = field.bytes().await.map_err(|_| StatusCode::BAD_REQUEST)?;
+        
+        let file_path = save_dir.join(&name);
+        std::fs::write(&file_path, &data).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        
+        if !json {
+            println!("📥 收到文件: {} ({} bytes)", name, data.len());
+            println!("✓ 已保存到: {}", file_path.display());
+            println!();
+        } else {
+            println!("{}", serde_json::json!({
+                "event": "file_received",
+                "file": {
+                    "name": name,
+                    "size": data.len(),
+                    "path": file_path.to_string_lossy()
+                }
+            }));
+        }
     }
     
     Ok(StatusCode::OK)
