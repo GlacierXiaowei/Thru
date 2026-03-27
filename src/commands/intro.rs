@@ -17,6 +17,10 @@ pub fn handle_intro() -> Result<()> {
    thru pull --list       # 查看手机上的文件
    thru pull 文件名       # 拉取文件
 
+💡 提示: 安装 rsync 可获得更快的大文件传输
+   Windows: scoop install rsync
+   手机: pkg install rsync
+
 详细帮助: thru <命令> --help"#);
     Ok(())
 }
