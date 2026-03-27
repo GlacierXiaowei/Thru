@@ -69,6 +69,7 @@ impl HttpServer {
         let json_mode = json;
         
         let app = Router::new()
+            .route("/", get(upload_form))
             .route("/upload", post(move |multipart: Multipart| {
                 let save_dir = save_dir.clone();
                 async move {
@@ -168,4 +169,8 @@ async fn device_info() -> Json<serde_json::Value> {
         "device_id": uuid::Uuid::new_v4().to_string(),
         "port": DEFAULT_PORT
     }))
+}
+
+async fn upload_form() -> axum::response::Html<&'static str> {
+    axum::response::Html(include_str!("../templates/upload.html"))
 }
