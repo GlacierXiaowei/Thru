@@ -85,6 +85,9 @@ enum Commands {
         /// 显示隐藏文件
         #[arg(short, long)]
         all: bool,
+        /// JSON 格式输出
+        #[arg(long)]
+        json: bool,
     },
     /// 查看传输历史记录
     History {
@@ -97,6 +100,9 @@ enum Commands {
         /// 只保留最近 n 条记录
         #[arg(long)]
         keep: Option<usize>,
+        /// JSON 格式输出
+        #[arg(long)]
+        json: bool,
     },
     /// 配置管理
     Config {
@@ -167,8 +173,8 @@ fn main() -> Result<()> {
             commands::pull::handle_pull(file, list, all, output, json)?;
         }
         Some(Commands::Receive { watch }) => commands::receive::handle_receive(watch)?,
-        Some(Commands::List { all }) => commands::list::handle_list(all)?,
-        Some(Commands::History { all, clear, keep }) => commands::history::handle_history(all, clear, keep)?,
+        Some(Commands::List { all, json }) => commands::list::handle_list(all, json)?,
+        Some(Commands::History { all, clear, keep, json }) => commands::history::handle_history(all, clear, keep, json)?,
         None => println!("使用 --help 查看帮助"),
     }
     Ok(())
