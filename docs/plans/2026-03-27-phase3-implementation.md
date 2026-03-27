@@ -18,9 +18,9 @@
 
 | Batch | Tasks | 状态 |
 |-------|-------|------|
-| Batch 1 | Task 1-4 | ⏳ 待执行 |
-| Batch 2 | Task 5-7 | ⏳ 待执行 |
-| Batch 3 | Task 8-10 | ⏳ 待执行 |
+| Batch 1 | Task 1-4 | ✅ 完成 |
+| Batch 2 | Task 5-7 | ✅ 完成 |
+| Batch 3 | Task 8-10 | ✅ 完成 |
 
 ---
 
@@ -723,14 +723,14 @@ git commit -m "docs: update README and mark Phase 3 complete"
 
 ## 验证清单
 
-- [ ] `thru serve` 启动 HTTP 服务
-- [ ] `thru serve --port 8080` 指定端口
-- [ ] 端口降级：53317 → 53318 → 8080
-- [ ] `thru discover` 发现设备
-- [ ] `thru discover --json` JSON 输出
-- [ ] `thru send file.txt --lan` HTTP 发送
-- [ ] `curl http://localhost:53317/` 返回服务信息
-- [ ] 文件上传功能正常
+- [x] `thru serve` 启动 HTTP 服务
+- [x] `thru serve --port 8080` 指定端口
+- [x] 端口降级：53317 → 53318 → 8080
+- [x] `thru discover` 发现设备
+- [x] `thru discover --json` JSON 输出
+- [x] `thru send file.txt --lan` HTTP 发送
+- [x] `curl http://localhost:53317/` 返回服务信息
+- [x] 文件上传功能正常
 
 ---
 
