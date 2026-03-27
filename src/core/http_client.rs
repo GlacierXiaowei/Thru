@@ -10,6 +10,7 @@ impl HttpClient {
         port: u16,
         file_path: &str,
         json: bool,
+        show_progress: bool,
     ) -> Result<()> {
         let path = Path::new(file_path);
         
@@ -29,7 +30,17 @@ impl HttpClient {
         
         let url = format!("http://{}:{}/upload", ip, port);
         
+        let pb = if show_progress && !json {
+            Some(crate::utils::progress::create_upload_bar(file_size, &file_name))
+        } else {
+            None
+        };
+        
         let file_bytes = std::fs::read(path)?;
+        
+        if let Some(ref pb) = pb {
+            pb.inc(file_bytes.len() as u64);
+        }
         
         let file_part = multipart::Part::bytes(file_bytes)
             .file_name(file_name.clone());
@@ -43,6 +54,10 @@ impl HttpClient {
             .multipart(form)
             .send()
             .await?;
+        
+        if let Some(pb) = pb {
+            pb.finish();
+        }
         
         if response.status().is_success() {
             if json {

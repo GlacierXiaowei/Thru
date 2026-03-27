@@ -46,6 +46,6 @@ fn handle_lan_send(file: &str, addr: Option<&str>, json: bool) -> Result<()> {
     
     let rt = tokio::runtime::Runtime::new()?;
     rt.block_on(async {
-        HttpClient::send_file(&ip, port, file, json).await
+        HttpClient::send_file(&ip, port, file, json, true).await
     })
 }
