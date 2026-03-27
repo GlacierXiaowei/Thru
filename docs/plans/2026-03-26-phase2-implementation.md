@@ -4,9 +4,22 @@
 
 **Goal:** 让 SSH 方案完整可用，支持免密配置、远程拉取、rsync 优化和 --json 输出
 
-**Architecture:** 新增 init/pull 命令，改造 send 使用 rsync，新增 ssh_key 模块管理密钥，使用 indicatif 显示进度条
+**Architecture:** 新增 init/pull/intro 命令，改造 send 使用 rsync，新增 ssh_key 模块管理密钥，使用 indicatif 显示进度条
 
 **Tech Stack:** Rust, clap, inquire, indicatif, rsync/scp
+
+**Known Issues:**
+- 路径引号问题：用户路径含空格时 SSH 命令失败，需要在 send.rs/transfer.rs/pull.rs 中加引号
+
+---
+
+## 进度
+
+| Batch | Tasks | 状态 |
+|-------|-------|------|
+| Batch 1 | Task 1-3 | ✅ 已完成 |
+| Batch 2 | Task 4-6 | 待执行 |
+| Batch 3 | Task 7-10 | 待执行 |
 
 ---
 
