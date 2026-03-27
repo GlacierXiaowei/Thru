@@ -118,6 +118,15 @@ enum Commands {
         #[arg(long)]
         json: bool,
     },
+    /// 发现局域网设备
+    Discover {
+        /// 搜索超时（秒）
+        #[arg(short, long, default_value = "5")]
+        timeout: u64,
+        /// JSON 格式输出
+        #[arg(long)]
+        json: bool,
+    },
 }
 
 #[derive(clap::Subcommand)]
@@ -186,6 +195,9 @@ fn main() -> Result<()> {
         Some(Commands::History { all, clear, keep, json }) => commands::history::handle_history(all, clear, keep, json)?,
         Some(Commands::Serve { port, json }) => {
             commands::serve::handle_serve(port, json)?;
+        }
+        Some(Commands::Discover { timeout, json }) => {
+            commands::discover::handle_discover(timeout, json)?;
         }
         None => println!("使用 --help 查看帮助"),
     }

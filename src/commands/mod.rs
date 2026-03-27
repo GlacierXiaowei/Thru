@@ -10,3 +10,4 @@ pub mod list;
 pub mod receive;
 pub mod history;
 pub mod serve;
+pub mod discover;
