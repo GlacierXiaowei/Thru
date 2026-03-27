@@ -14,6 +14,8 @@ struct Cli {
 
 #[derive(clap::Subcommand)]
 enum Commands {
+    /// 快速入门指南
+    Intro,
     /// 查看 SSH 和 Tailscale 连接状态
     Status {
         #[arg(long)]
@@ -102,6 +104,7 @@ fn main() -> Result<()> {
     let cli = Cli::parse();
 
     match cli.command {
+        Some(Commands::Intro) => commands::intro::handle_intro()?,
         Some(Commands::Config { action }) => match action {
             ConfigAction::Show => commands::config::handle_show()?,
             ConfigAction::SetIp { ip } => commands::config::handle_set_ip(&ip)?,

@@ -3,6 +3,7 @@ use std::path::Path;
 use std::fs;
 use crate::core::config::Config;
 use crate::core::history::{self, HistoryEntry, DeviceInfo, FileInfo};
+use crate::core::ssh_key;
 use chrono::Local;
 use anyhow::Result;
 
@@ -11,14 +12,29 @@ pub fn send_file(config: &Config, file_path: &str, recursive: bool) -> Result<()
     let ip = &config.device.phone_ip;
     let port = config.device.phone_port;
     let dest_dir = "~/storage/downloads/Thru/";
+    
+    let key_path = ssh_key::get_key_path();
+    let key_exists = ssh_key::key_exists();
+    let key_str = key_path.display().to_string();
 
     println!("📁 确保目标目录存在...");
+    let mkdir_args = if key_exists {
+        vec![
+            "-i".to_string(), key_str.clone(),
+            "-p".to_string(), port.to_string(),
+            format!("{}@{}", user, ip),
+            "mkdir -p ~/storage/downloads/Thru/".to_string()
+        ]
+    } else {
+        vec![
+            "-p".to_string(), port.to_string(),
+            format!("{}@{}", user, ip),
+            "mkdir -p ~/storage/downloads/Thru/".to_string()
+        ]
+    };
+    
     let mkdir_status = Command::new("ssh")
-        .args([
-            "-p", &port.to_string(),
-            &format!("{}@{}", user, ip),
-            "mkdir -p ~/storage/downloads/Thru/"
-        ])
+        .args(&mkdir_args)
         .status()?;
     
     if !mkdir_status.success() {
@@ -31,6 +47,11 @@ pub fn send_file(config: &Config, file_path: &str, recursive: bool) -> Result<()
         "-P".to_string(),
         port.to_string(),
     ];
+    
+    if key_exists {
+        args.push("-i".to_string());
+        args.push(key_str);
+    }
 
     if recursive {
         args.push("-r".to_string());
