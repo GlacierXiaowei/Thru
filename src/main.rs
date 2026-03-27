@@ -53,6 +53,9 @@ enum Commands {
         /// 强制使用 scp
         #[arg(long)]
         scp: bool,
+        /// 使用 HTTP 局域网传输，可指定 IP:端口
+        #[arg(long)]
+        lan: Option<Option<String>>,
         /// JSON 格式输出
         #[arg(long)]
         json: bool,
@@ -184,8 +187,8 @@ fn main() -> Result<()> {
         Some(Commands::Status { json }) => commands::status::handle_status(json)?,
         Some(Commands::Start) => commands::start::handle_start()?,
         Some(Commands::Stop) => commands::stop::handle_stop()?,
-        Some(Commands::Send { file, recursive, rsync, scp, json }) => {
-            commands::send::handle_send(&file, recursive, rsync, scp, json)?;
+        Some(Commands::Send { file, recursive, rsync, scp, lan, json }) => {
+            commands::send::handle_send(&file, recursive, rsync, scp, lan, json)?;
         }
         Some(Commands::Pull { file, list, all, output, json }) => {
             commands::pull::handle_pull(file, list, all, output, json)?;
