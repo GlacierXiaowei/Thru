@@ -109,6 +109,15 @@ enum Commands {
         #[command(subcommand)]
         action: ConfigAction,
     },
+    /// 启动 HTTP 文件服务
+    Serve {
+        /// 指定端口
+        #[arg(short, long)]
+        port: Option<u16>,
+        /// JSON 格式输出
+        #[arg(long)]
+        json: bool,
+    },
 }
 
 #[derive(clap::Subcommand)]
@@ -175,6 +184,9 @@ fn main() -> Result<()> {
         Some(Commands::Receive { watch }) => commands::receive::handle_receive(watch)?,
         Some(Commands::List { all, json }) => commands::list::handle_list(all, json)?,
         Some(Commands::History { all, clear, keep, json }) => commands::history::handle_history(all, clear, keep, json)?,
+        Some(Commands::Serve { port, json }) => {
+            commands::serve::handle_serve(port, json)?;
+        }
         None => println!("使用 --help 查看帮助"),
     }
     Ok(())
