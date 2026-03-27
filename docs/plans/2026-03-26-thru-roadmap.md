@@ -1,7 +1,8 @@
 # Thru 产品路线图
 
 > 创建日期: 2026-03-26
-> 状态: 设计完成，准备进入 Phase 2
+> 更新日期: 2026-03-27
+> 状态: Phase 4 完成
 
 ---
 
@@ -45,27 +46,34 @@ Thru - AI Agent 友好的跨设备文件传输工具
 │  Phase 1 ✅     │  SSH 基础传输                                  │
 │  (已完成)       │  thru send, receive, status, config           │
 ├─────────────────────────────────────────────────────────────────┤
-│  Phase 2        │  SSH 完善                                      │
-│  (下一步)       │  ├── 密钥认证配置                              │
+│  Phase 2 ✅     │  SSH 完善                                      │
+│  (已完成)       │  ├── 密钥认证配置                              │
 │                 │  ├── thru pull（远程拉取）                     │
 │                 │  ├── thru send 优化（rsync 替代 scp）          │
 │                 │  ├── 降级策略（rsync → scp）                   │
 │                 │  └── thru init（初始化向导）                   │
 ├─────────────────────────────────────────────────────────────────┤
-│  Phase 3        │  HTTP 局域网传输（自建）                        │
-│                 │  ├── thru serve（电脑端 HTTP 服务）            │
+│  Phase 3 ✅     │  HTTP 局域网传输（自建）                        │
+│  (已完成)       │  ├── thru serve（电脑端 HTTP 服务）            │
 │                 │  ├── thru discover（UDP 组播发现）             │
 │                 │  ├── thru send --lan（HTTP 方式）              │
 │                 │  ├── 传输优先级（HTTP → rsync → scp）          │
 │                 │  └── 手机端：Termux + Python HTTP（临时）      │
 ├─────────────────────────────────────────────────────────────────┤
-│  Phase 4        │  LocalSend 协议兼容                            │
-│                 │  ├── 实现完整 LocalSend REST API               │
+│  Phase 4 ✅     │  HTTP 完善                                      │
+│  (已完成)       │  ├── 进度条显示（indicatif）                   │
+│                 │  ├── 多设备选择列表                            │
+│                 │  ├── 降级策略（HTTP → rsync → scp）            │
+│                 │  ├── thru receive（HTTP 接收模式）             │
+│                 │  └── Web UI（浏览器上传）                      │
+├─────────────────────────────────────────────────────────────────┤
+│  Phase 5        │  LocalSend 协议兼容                            │
+│  (待开发)       │  ├── 实现完整 LocalSend REST API               │
 │                 │  ├── 与 LocalSend App 互传                     │
 │                 │  └── PIN 保护 / HTTPS                          │
 ├─────────────────────────────────────────────────────────────────┤
-│  Phase 5        │  多平台 + 灵动岛 + SSH+HTTP 混合               │
-│                 │  ├── iOS Dynamic Island                        │
+│  Phase 6        │  多平台 + 灵动岛 + SSH+HTTP 混合               │
+│  (待开发)       │  ├── iOS Dynamic Island                        │
 │                 │  ├── 鸿蒙灵动岛                                │
 │                 │  ├── 鸿蒙原生 App                              │
 │                 │  ├── Flutter GUI（桌面端）                     │
@@ -239,6 +247,9 @@ thru send file.jpg --tunnel
 
 ## 九、当前状态
 
-- Phase 1: ✅ 已完成
-- Phase 2: 📋 准备开始详细设计
-- Phase 3-5: 📅 待开发
+- Phase 1: ✅ 已完成（CLI 基础）
+- Phase 2: ✅ 已完成（SSH 完善）
+- Phase 3: ✅ 已完成（HTTP 局域网传输）
+- Phase 4: ✅ 已完成（HTTP 完善：进度条、降级策略、receive 命令）
+- Phase 5: 📅 待开发（LocalSend 协议兼容）
+- Phase 6: 📅 待开发（多平台 + 灵动岛）
