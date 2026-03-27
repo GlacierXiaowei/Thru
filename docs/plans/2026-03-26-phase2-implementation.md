@@ -18,8 +18,21 @@
 | Batch | Tasks | 状态 |
 |-------|-------|------|
 | Batch 1 | Task 1-3 | ✅ 已完成 |
-| Batch 2 | Task 4-6 | 待执行 |
+| Batch 2 | Task 4-6 | ✅ 已完成 |
 | Batch 3 | Task 7-10 | 待执行 |
+
+### 详细进度
+- ✅ Task 1: 添加依赖 (indicatif, inquire)
+- ✅ Task 2: 创建 SSH 密钥管理模块
+- ✅ Task 3: 实现 thru config keygen/key-copy
+- ✅ Task 4: 实现 thru init 命令
+- ✅ Task 5: 检测 rsync 可用性
+- ✅ Task 6: 实现 rsync 传输 + 进度条
+
+### 额外完成（不在原计划中）
+- ✅ `thru intro` 命令 (来自 help-improvement-design)
+- ✅ send 命令 SSH 密钥支持
+- ✅ send 命令 --rsync/--scp/--json 参数
 
 ---
 

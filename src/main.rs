@@ -16,6 +16,21 @@ struct Cli {
 enum Commands {
     /// 快速入门指南
     Intro,
+    /// 初始化设备配置
+    Init {
+        /// 手机 IP 地址
+        #[arg(short, long)]
+        ip: Option<String>,
+        /// SSH 端口
+        #[arg(short, long)]
+        port: Option<u16>,
+        /// SSH 用户名
+        #[arg(short = 'u', long)]
+        user: Option<String>,
+        /// JSON 格式输出
+        #[arg(long)]
+        json: bool,
+    },
     /// 查看 SSH 和 Tailscale 连接状态
     Status {
         #[arg(long)]
@@ -32,6 +47,15 @@ enum Commands {
         /// 递归发送文件夹
         #[arg(short, long)]
         recursive: bool,
+        /// 强制使用 rsync
+        #[arg(long)]
+        rsync: bool,
+        /// 强制使用 scp
+        #[arg(long)]
+        scp: bool,
+        /// JSON 格式输出
+        #[arg(long)]
+        json: bool,
     },
     /// 接收手机发送的文件
     Receive {
@@ -105,6 +129,7 @@ fn main() -> Result<()> {
 
     match cli.command {
         Some(Commands::Intro) => commands::intro::handle_intro()?,
+        Some(Commands::Init { ip, port, user, json }) => commands::init::handle_init(ip, port, user, json)?,
         Some(Commands::Config { action }) => match action {
             ConfigAction::Show => commands::config::handle_show()?,
             ConfigAction::SetIp { ip } => commands::config::handle_set_ip(&ip)?,
@@ -118,7 +143,9 @@ fn main() -> Result<()> {
         Some(Commands::Status { json }) => commands::status::handle_status(json)?,
         Some(Commands::Start) => commands::start::handle_start()?,
         Some(Commands::Stop) => commands::stop::handle_stop()?,
-        Some(Commands::Send { file, recursive }) => commands::send::handle_send(&file, recursive)?,
+        Some(Commands::Send { file, recursive, rsync, scp, json }) => {
+            commands::send::handle_send(&file, recursive, rsync, scp, json)?;
+        }
         Some(Commands::Receive { watch }) => commands::receive::handle_receive(watch)?,
         Some(Commands::List { all }) => commands::list::handle_list(all)?,
         Some(Commands::History { all, clear, keep }) => commands::history::handle_history(all, clear, keep)?,

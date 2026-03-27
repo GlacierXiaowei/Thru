@@ -1,3 +1,4 @@
+pub mod init;
 pub mod intro;
 pub mod config;
 pub mod status;
