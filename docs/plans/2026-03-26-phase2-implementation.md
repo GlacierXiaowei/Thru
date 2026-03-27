@@ -19,7 +19,7 @@
 |-------|-------|------|
 | Batch 1 | Task 1-3 | ✅ 已完成 |
 | Batch 2 | Task 4-6 | ✅ 已完成 |
-| Batch 3 | Task 7-10 | 🔄 待执行 |
+| Batch 3 | Task 7-10 | ✅ 已完成 |
 
 ### 详细进度
 - ✅ Task 1: 添加依赖 (indicatif, inquire)
@@ -28,10 +28,10 @@
 - ✅ Task 4: 实现 thru init 命令
 - ✅ Task 5: 检测 rsync 可用性
 - ✅ Task 6: 实现 rsync 传输 + 进度条
-- ⬜ Task 7: 更新 send 命令支持新参数（已完成，需验证）
-- ⬜ Task 8: 实现 thru pull 命令
-- ⬜ Task 9: 其他命令 --json 支持
-- ⬜ Task 10: 测试和文档更新
+- ✅ Task 7: 更新 send 命令支持新参数
+- ✅ Task 8: 实现 thru pull 命令
+- ✅ Task 9: 其他命令 --json 支持
+- ✅ Task 10: 测试和文档更新
 
 ### 额外完成（不在原计划中）
 - ✅ `thru intro` 命令 (来自 help-improvement-design)
