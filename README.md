@@ -70,6 +70,11 @@ thru send file.jpg --json
   - [x] Batch 1: 密钥管理
   - [x] Batch 2: init 命令 + rsync 支持
   - [x] Batch 3: pull 命令 + json 支持
-- [ ] Phase 3: 高级功能
+- [ ] Phase 3: HTTP 局域网传输
+  - [ ] Batch 1: HTTP 服务器（`thru serve`）
+  - [ ] Batch 2: 设备发现（`thru discover`）
+  - [ ] Batch 3: HTTP 发送（`thru send --lan`）
+- [ ] Phase 4: LocalSend 协议兼容
+- [ ] Phase 5: Flutter GUI + 手机端 App
 
 详细设计文档见 `docs/` 目录。
