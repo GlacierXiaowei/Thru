@@ -2,9 +2,17 @@ use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::net::{Ipv4Addr, SocketAddr, UdpSocket};
 use std::time::Duration;
+use local_ip_address::local_ip;
 
 const MULTICAST_ADDR: Ipv4Addr = Ipv4Addr::new(239, 12, 34, 56);
 const MULTICAST_PORT: u16 = 53317;
+
+fn get_local_ip() -> String {
+    match local_ip() {
+        Ok(ip) => ip.to_string(),
+        Err(_) => "0.0.0.0".to_string(),
+    }
+}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DiscoverMessage {
@@ -76,14 +84,18 @@ impl Discovery {
             .map(|h| h.to_string_lossy().to_string())
             .unwrap_or_else(|_| "Unknown".to_string());
         
+        let local_ip = get_local_ip();
+        
         let response = DeviceInfo {
             msg_type: "THRU_RESPONSE".to_string(),
             name: hostname,
-            ip: "0.0.0.0".to_string(),
+            ip: local_ip.clone(),
             port,
             device_id,
             network: "lan".to_string(),
         };
+        
+        println!("📡 设备发现服务已启动 (IP: {})", local_ip);
         
         let mut buf = [0u8; 4096];
         

@@ -12,8 +12,8 @@ Thru 是一个 Rust CLI 手机-电脑文件互传工具，支持 SSH/rsync 和 H
 
 - Phase 1 ✅ SSH 基础传输
 - Phase 2 ✅ SSH 增强（rsync、pull）
-- Phase 3 ✅ HTTP 局域网传输（功能实现，但有问题）
-- Phase 4 进行中（HTTP 优化）
+- Phase 3 ✅ HTTP 局域网传输
+- Phase 4 ✅ HTTP 优化（P0/P1 问题已修复）
 
 ## 已完成的实现计划
 
@@ -49,10 +49,10 @@ futures-util = "0.3"
 
 | 优先级 | 问题 | 位置 | 说明 | 状态 |
 |--------|------|------|------|------|
-| **P0** | HTTP 服务端不保存文件 | http_server.rs | 保存到 ~/Downloads/Thru/ | 📋 待实现 |
-| **P0** | HTTP 上传无认证 | http_server.rs | IP 网段白名单 | 📋 待实现 |
-| **P1** | 进度条架构错误 | http_client.rs | Channel 模式 | 📋 待实现 |
-| **P1** | 设备 IP 硬编码 | discovery.rs:82 | local_ip_address | 📋 待实现 |
+| **P0** | HTTP 服务端不保存文件 | http_server.rs | 保存到 ~/Downloads/Thru/ | ✅ 已修复 |
+| **P0** | HTTP 上传无认证 | http_server.rs | IP 网段白名单 | ✅ 已修复 |
+| **P1** | 进度条架构错误 | http_client.rs | Channel 模式 | ✅ 已修复 |
+| **P1** | 设备 IP 硬编码 | discovery.rs:82 | local_ip_address | ✅ 已修复 |
 | **P2** | 同步 I/O 阻塞 | transfer.rs | tokio::process | 📅 延后 |
 | **P2** | 无并发上传 | 全局 | TaskRunner | 📅 延后 |
 

@@ -2,10 +2,13 @@ use anyhow::{Result, bail};
 use reqwest::multipart;
 use reqwest::Body;
 use std::path::Path;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
-use tokio::sync::Mutex;
 use tokio::fs::File;
 use tokio::io::AsyncReadExt;
+use tokio::sync::mpsc;
+use tokio_stream::wrappers::ReceiverStream;
+use tokio_stream::StreamExt;
 
 pub struct HttpClient;
 
@@ -41,42 +44,45 @@ impl HttpClient {
             None
         };
         
-        let file = File::open(path).await?;
+        let (tx, rx) = mpsc::channel::<Vec<u8>>(64);
+        let bytes_sent = Arc::new(AtomicU64::new(0));
+        let bytes_sent_clone = bytes_sent.clone();
+        let pb_clone = pb.clone();
+        let file_path_owned = file_path.to_string();
         
-        let pb_arc = Arc::new(Mutex::new(pb));
-        let bytes_sent = Arc::new(Mutex::new(0u64));
-        let file_arc = Arc::new(Mutex::new(file));
-        
-        let body = Body::wrap_stream({
-            let pb_arc = pb_arc.clone();
-            let bytes_sent = bytes_sent.clone();
-            let file_arc = file_arc.clone();
+        let file_task = tokio::spawn(async move {
+            let mut file = match File::open(&file_path_owned).await {
+                Ok(f) => f,
+                Err(_) => return None,
+            };
+            let mut buf = vec![0u8; 64 * 1024];
             
-            async_stream::stream! {
-                let mut buf = vec![0u8; 64 * 1024];
-                let mut file = file_arc.lock().await;
-                
-                loop {
-                    match file.read(&mut buf).await {
-                        Ok(0) => break,
-                        Ok(n) => {
-                            let mut total = bytes_sent.lock().await;
-                            *total += n as u64;
-                            
-                            if let Some(ref pb) = *pb_arc.lock().await {
-                                pb.set_position(*total);
-                            }
-                            
-                            yield Ok::<_, std::io::Error>(buf[..n].to_vec());
+            loop {
+                match file.read(&mut buf).await {
+                    Ok(0) => break,
+                    Ok(n) => {
+                        let chunk = buf[..n].to_vec();
+                        bytes_sent_clone.fetch_add(n as u64, Ordering::SeqCst);
+                        
+                        if let Some(ref pb) = pb_clone {
+                            pb.set_position(bytes_sent_clone.load(Ordering::SeqCst));
                         }
-                        Err(e) => {
-                            yield Err(e);
+                        
+                        if tx.send(chunk).await.is_err() {
                             break;
                         }
                     }
+                    Err(_) => {
+                        break;
+                    }
                 }
             }
+            
+            Some(())
         });
+        
+        let stream = ReceiverStream::new(rx);
+        let body = Body::wrap_stream(stream.map(Ok::<_, std::io::Error>));
         
         let file_part = multipart::Part::stream_with_length(body, file_size)
             .file_name(file_name.clone())
@@ -92,7 +98,9 @@ impl HttpClient {
             .send()
             .await?;
         
-        if let Some(pb) = pb_arc.lock().await.take() {
+        let _ = file_task.await;
+        
+        if let Some(pb) = pb {
             pb.finish();
         }
         
