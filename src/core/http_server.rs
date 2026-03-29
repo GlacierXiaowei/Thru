@@ -130,9 +130,11 @@ async fn upload(
     while let Ok(Some(field)) = multipart.next_field().await {
         let name = field.file_name().unwrap_or("unknown").to_string();
         
+        // 使用 bytes() 读取，但 axum 已经内置了流式接收
         let data = match field.bytes().await {
             Ok(d) => d,
             Err(e) => {
+                println!("❌ 读取文件失败: {}", e);
                 return (StatusCode::BAD_REQUEST, e.to_string()).into_response();
             }
         };
