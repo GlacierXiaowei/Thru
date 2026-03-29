@@ -1,6 +1,11 @@
 use anyhow::{Result, bail};
 use reqwest::multipart;
+use reqwest::Body;
 use std::path::Path;
+use std::sync::Arc;
+use tokio::sync::Mutex;
+use tokio::fs::File;
+use tokio::io::AsyncReadExt;
 
 pub struct HttpClient;
 
@@ -36,14 +41,46 @@ impl HttpClient {
             None
         };
         
-        let file_bytes = std::fs::read(path)?;
+        let file = File::open(path).await?;
         
-        if let Some(ref pb) = pb {
-            pb.inc(file_bytes.len() as u64);
-        }
+        let pb_arc = Arc::new(Mutex::new(pb));
+        let bytes_sent = Arc::new(Mutex::new(0u64));
+        let file_arc = Arc::new(Mutex::new(file));
         
-        let file_part = multipart::Part::bytes(file_bytes)
-            .file_name(file_name.clone());
+        let body = Body::wrap_stream({
+            let pb_arc = pb_arc.clone();
+            let bytes_sent = bytes_sent.clone();
+            let file_arc = file_arc.clone();
+            
+            async_stream::stream! {
+                let mut buf = vec![0u8; 64 * 1024];
+                let mut file = file_arc.lock().await;
+                
+                loop {
+                    match file.read(&mut buf).await {
+                        Ok(0) => break,
+                        Ok(n) => {
+                            let mut total = bytes_sent.lock().await;
+                            *total += n as u64;
+                            
+                            if let Some(ref pb) = *pb_arc.lock().await {
+                                pb.set_position(*total);
+                            }
+                            
+                            yield Ok::<_, std::io::Error>(buf[..n].to_vec());
+                        }
+                        Err(e) => {
+                            yield Err(e);
+                            break;
+                        }
+                    }
+                }
+            }
+        });
+        
+        let file_part = multipart::Part::stream_with_length(body, file_size)
+            .file_name(file_name.clone())
+            .mime_str("application/octet-stream")?;
         
         let form = multipart::Form::new()
             .part("file", file_part);
@@ -55,7 +92,7 @@ impl HttpClient {
             .send()
             .await?;
         
-        if let Some(pb) = pb {
+        if let Some(pb) = pb_arc.lock().await.take() {
             pb.finish();
         }
         
