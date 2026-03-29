@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thru - 发送文件</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 { text-align: center; color: #333; margin-bottom: 8px; }
+        .subtitle { text-align: center; color: #888; margin-bottom: 30px; font-size: 14px; }
+        .drop-zone {
+            border: 2px dashed #ccc;
+            border-radius: 12px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 20px;
+        }
+        .drop-zone:hover, .drop-zone.dragover { border-color: #667eea; background: #f8f9ff; }
+        .drop-zone svg { width: 48px; height: 48px; margin-bottom: 12px; }
+        .drop-zone p { color: #666; font-size: 14px; }
+        input[type="file"] { display: none; }
+        .file-list { margin-bottom: 20px; }
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        .file-item .remove { cursor: pointer; color: #e74c3c; font-size: 18px; }
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        button:hover { transform: translateY(-2px); }
+        button:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        .status { text-align: center; margin-top: 16px; font-size: 14px; }
+        .status.success { color: #27ae60; }
+        .status.error { color: #e74c3c; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📤 Thru</h1>
+        <p class="subtitle">发送文件到电脑</p>
+        
+        <div class="drop-zone" id="dropZone">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17,8 12,3 7,8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <p>点击或拖拽文件到这里</p>
+        </div>
+        
+        <input type="file" id="fileInput" multiple>
+        
+        <div class="file-list" id="fileList"></div>
+        
+        <button id="sendBtn" disabled>发送文件</button>
+        
+        <div class="status" id="status"></div>
+    </div>
+    
+    <script>
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const fileList = document.getElementById('fileList');
+        const sendBtn = document.getElementById('sendBtn');
+        const status = document.getElementById('status');
+        let files = [];
+        
+        dropZone.addEventListener('click', () => fileInput.click());
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            addFiles(e.dataTransfer.files);
+        });
+        fileInput.addEventListener('change', () => addFiles(fileInput.files));
+        
+        function addFiles(newFiles) {
+            files = [...files, ...newFiles];
+            renderFileList();
+            sendBtn.disabled = files.length === 0;
+        }
+        
+        function renderFileList() {
+            fileList.innerHTML = files.map((f, i) => `
+                <div class="file-item">
+                    <span>${f.name} (${(f.size/1024).toFixed(1)} KB)</span>
+                    <span class="remove" onclick="removeFile(${i})">×</span>
+                </div>
+            `).join('');
+        }
+        
+        function removeFile(index) {
+            files.splice(index, 1);
+            renderFileList();
+            sendBtn.disabled = files.length === 0;
+        }
+        
+        sendBtn.addEventListener('click', async () => {
+            if (files.length === 0) return;
+            
+            sendBtn.disabled = true;
+            status.textContent = '发送中...';
+            status.className = 'status';
+            
+            const formData = new FormData();
+            files.forEach(f => formData.append('file', f));
+            
+            try {
+                const res = await fetch('/upload', { method: 'POST', body: formData });
+                if (res.ok) {
+                    status.textContent = '✓ 发送成功！';
+                    status.className = 'status success';
+                    files = [];
+                    renderFileList();
+                } else {
+                    status.textContent = '✗ 发送失败';
+                    status.className = 'status error';
+                }
+            } catch (e) {
+                status.textContent = '✗ 网络错误';
+                status.className = 'status error';
+            }
+            
+            sendBtn.disabled = files.length > 0;
+        });
+    </script>
+</body>
+</html>

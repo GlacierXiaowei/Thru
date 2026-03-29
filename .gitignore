@@ -1,5 +1,6 @@
 /target/
 /Cargo.lock
+/localsend-main
 
 # IDE
 .idea/
@@ -20,4 +21,9 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Test files
 test.txt
+test_*.txt
+test_*.bin
+*.test

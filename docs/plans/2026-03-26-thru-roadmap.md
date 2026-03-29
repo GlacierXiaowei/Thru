@@ -237,8 +237,41 @@ thru send file.jpg --tunnel
 
 ---
 
-## 九、当前状态
+## 九、从 LocalSend 学到的优化
+
+> 详细参考: [LocalSend 技术参考](../references/localsend-reference.md)
+
+### 核心问题修复 (P0)
+
+| 问题 | 位置 | 影响 | 解决方案 | 状态 |
+|------|------|------|----------|------|
+| HTTP 服务端不保存文件 | http_server.rs:68-77 | 功能缺失 | 实现文件保存 | ✅ 已修复 |
+| HTTP 上传无认证 | http_server.rs | 安全风险 | IP 网段白名单 | ✅ 已修复 |
+
+### 架构优化 (P1-P2)
+
+| 问题 | 当前设计 | LocalSend 设计 | 优化 | 状态 |
+|------|----------|----------------|------|------|
+| 进度条不显示 | HTTP 层更新进度 | 应用层更新进度 | Channel 模式 | ✅ 已修复 |
+| 设备 IP 硬编码 | "0.0.0.0" | 获取实际 IP | local_ip_address | ✅ 已修复 |
+| 同步阻塞 | std::process::Command | tokio::process::Command | 异步化 | 📅 延后 |
+| 无并发上传 | 单线程 | TaskRunner 50 并发 | 添加并发控制 | 📅 延后 |
+
+### 新功能建议
+
+| 功能 | 来源 | 优先级 |
+|------|------|--------|
+| Token 认证 | LocalSend V3 | P0 |
+| HTTP Scan Discovery | LocalSend | P2 |
+| 并发上传 | LocalSend TaskRunner | P2 |
+| IPv6 双栈 | LocalSend | P3 |
+
+---
+
+## 十、当前状态
 
 - Phase 1: ✅ 已完成
 - Phase 2: 📋 准备开始详细设计
 - Phase 3-5: 📅 待开发
+- **P0 问题**: ✅ 已修复（HTTP 保存 + IP 认证）
+- **P1 问题**: ✅ 已修复（进度条 + 设备 IP）

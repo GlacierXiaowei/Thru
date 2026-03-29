@@ -14,6 +14,23 @@ struct Cli {
 
 #[derive(clap::Subcommand)]
 enum Commands {
+    /// 快速入门指南
+    Intro,
+    /// 初始化设备配置
+    Init {
+        /// 手机 IP 地址
+        #[arg(short, long)]
+        ip: Option<String>,
+        /// SSH 端口
+        #[arg(short, long)]
+        port: Option<u16>,
+        /// SSH 用户名
+        #[arg(short = 'u', long)]
+        user: Option<String>,
+        /// JSON 格式输出
+        #[arg(long)]
+        json: bool,
+    },
     /// 查看 SSH 和 Tailscale 连接状态
     Status {
         #[arg(long)]
@@ -30,6 +47,38 @@ enum Commands {
         /// 递归发送文件夹
         #[arg(short, long)]
         recursive: bool,
+        /// 强制使用 rsync
+        #[arg(long)]
+        rsync: bool,
+        /// 强制使用 scp
+        #[arg(long)]
+        scp: bool,
+        /// 使用 HTTP 局域网传输，可指定 IP:端口
+        #[arg(long)]
+        lan: Option<Option<String>>,
+        /// 禁用降级策略（仅使用 HTTP）
+        #[arg(long)]
+        no_fallback: bool,
+        /// JSON 格式输出
+        #[arg(long)]
+        json: bool,
+    },
+    /// 从手机拉取文件
+    Pull {
+        /// 要拉取的文件名
+        file: Option<String>,
+        /// 列出远程文件
+        #[arg(short, long)]
+        list: bool,
+        /// 拉取全部文件
+        #[arg(short, long)]
+        all: bool,
+        /// 保存目录
+        #[arg(short, long)]
+        output: Option<String>,
+        /// JSON 格式输出
+        #[arg(long)]
+        json: bool,
     },
     /// 接收手机发送的文件
     Receive {
@@ -42,6 +91,9 @@ enum Commands {
         /// 显示隐藏文件
         #[arg(short, long)]
         all: bool,
+        /// JSON 格式输出
+        #[arg(long)]
+        json: bool,
     },
     /// 查看传输历史记录
     History {
@@ -54,11 +106,32 @@ enum Commands {
         /// 只保留最近 n 条记录
         #[arg(long)]
         keep: Option<usize>,
+        /// JSON 格式输出
+        #[arg(long)]
+        json: bool,
     },
     /// 配置管理
     Config {
         #[command(subcommand)]
         action: ConfigAction,
+    },
+    /// 启动 HTTP 文件服务
+    Serve {
+        /// 指定端口
+        #[arg(short, long)]
+        port: Option<u16>,
+        /// JSON 格式输出
+        #[arg(long)]
+        json: bool,
+    },
+    /// 发现局域网设备
+    Discover {
+        /// 搜索超时（秒）
+        #[arg(short, long, default_value = "5")]
+        timeout: u64,
+        /// JSON 格式输出
+        #[arg(long)]
+        json: bool,
     },
 }
 
@@ -102,6 +175,8 @@ fn main() -> Result<()> {
     let cli = Cli::parse();
 
     match cli.command {
+        Some(Commands::Intro) => commands::intro::handle_intro()?,
+        Some(Commands::Init { ip, port, user, json }) => commands::init::handle_init(ip, port, user, json)?,
         Some(Commands::Config { action }) => match action {
             ConfigAction::Show => commands::config::handle_show()?,
             ConfigAction::SetIp { ip } => commands::config::handle_set_ip(&ip)?,
@@ -115,10 +190,21 @@ fn main() -> Result<()> {
         Some(Commands::Status { json }) => commands::status::handle_status(json)?,
         Some(Commands::Start) => commands::start::handle_start()?,
         Some(Commands::Stop) => commands::stop::handle_stop()?,
-        Some(Commands::Send { file, recursive }) => commands::send::handle_send(&file, recursive)?,
+        Some(Commands::Send { file, recursive, rsync, scp, lan, no_fallback, json }) => {
+            commands::send::handle_send(&file, recursive, rsync, scp, lan, json, no_fallback)?;
+        }
+        Some(Commands::Pull { file, list, all, output, json }) => {
+            commands::pull::handle_pull(file, list, all, output, json)?;
+        }
         Some(Commands::Receive { watch }) => commands::receive::handle_receive(watch)?,
-        Some(Commands::List { all }) => commands::list::handle_list(all)?,
-        Some(Commands::History { all, clear, keep }) => commands::history::handle_history(all, clear, keep)?,
+        Some(Commands::List { all, json }) => commands::list::handle_list(all, json)?,
+        Some(Commands::History { all, clear, keep, json }) => commands::history::handle_history(all, clear, keep, json)?,
+        Some(Commands::Serve { port, json }) => {
+            commands::serve::handle_serve(port, json)?;
+        }
+        Some(Commands::Discover { timeout, json }) => {
+            commands::discover::handle_discover(timeout, json)?;
+        }
         None => println!("使用 --help 查看帮助"),
     }
     Ok(())

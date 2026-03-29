@@ -5,3 +5,6 @@ pub mod transfer;
 pub mod file_watcher;
 pub mod history;
 pub mod tailscale;
+pub mod http_server;
+pub mod discovery;
+pub mod http_client;
