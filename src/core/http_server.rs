@@ -118,7 +118,7 @@ async fn upload(
         return (StatusCode::FORBIDDEN, format!("IP {} not allowed", client_ip)).into_response();
     }
     
-    println!("✅ 允许来自 {} 的上传请求", client_ip);
+    println!("✅ 收到上传请求 from {}", client_ip);
     
     let receive_dir = match ensure_receive_dir().await {
         Ok(d) => d,
@@ -129,8 +129,8 @@ async fn upload(
     
     while let Ok(Some(field)) = multipart.next_field().await {
         let name = field.file_name().unwrap_or("unknown").to_string();
+        println!("📥 开始接收: {}", name);
         
-        // 使用 bytes() 读取，但 axum 已经内置了流式接收
         let data = match field.bytes().await {
             Ok(d) => d,
             Err(e) => {
@@ -158,7 +158,7 @@ async fn upload(
             }
         }
         
-        println!("📥 已保存文件: {} ({} bytes)", file_path.display(), data.len());
+        println!("📥 完成: {} ({} bytes)", file_path.display(), data.len());
     }
     
     (StatusCode::OK, "OK".to_string()).into_response()
