@@ -18,9 +18,9 @@
 
 | Batch | Tasks | 状态 |
 |-------|-------|------|
-| Batch 1 | Task 1-3 | ✅ 完成 |
-| Batch 2 | Task 4-6 | ✅ 完成 |
-| Batch 3 | Task 7-9 | ✅ 完成 |
+| Batch 1 | Task 1-3 | ⏳ 待开始 |
+| Batch 2 | Task 4-6 | ⏳ 待开始 |
+| Batch 3 | Task 7-9 | ⏳ 待开始 |
 
 ---
 

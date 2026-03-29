@@ -82,18 +82,9 @@ enum Commands {
     },
     /// 接收手机发送的文件
     Receive {
-        /// 使用 HTTP 接收模式（默认）
+        /// 实时监控新文件
         #[arg(long)]
-        http: bool,
-        /// 使用 SSH 监控模式
-        #[arg(long)]
-        ssh: bool,
-        /// 指定 HTTP 端口
-        #[arg(short, long)]
-        port: Option<u16>,
-        /// JSON 格式输出
-        #[arg(long)]
-        json: bool,
+        watch: bool,
     },
     /// 列出已接收的文件
     List {
@@ -205,9 +196,7 @@ fn main() -> Result<()> {
         Some(Commands::Pull { file, list, all, output, json }) => {
             commands::pull::handle_pull(file, list, all, output, json)?;
         }
-        Some(Commands::Receive { http, ssh, port, json }) => {
-            commands::receive::handle_receive(http, ssh, port, json)?;
-        }
+        Some(Commands::Receive { watch }) => commands::receive::handle_receive(watch)?,
         Some(Commands::List { all, json }) => commands::list::handle_list(all, json)?,
         Some(Commands::History { all, clear, keep, json }) => commands::history::handle_history(all, clear, keep, json)?,
         Some(Commands::Serve { port, json }) => {
