@@ -21,4 +21,9 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Test files
 test.txt
+test_*.txt
+test_*.bin
+*.test
