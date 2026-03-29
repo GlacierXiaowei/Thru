@@ -62,7 +62,8 @@ impl HttpClient {
                                 let pct = sent * 100 / file_size_clone;
                                 let last = last_pct_clone.swap(pct, Ordering::SeqCst);
                                 if pct != last {
-                                    print!("\r📤 {} {}% [{}/{}]", file_name_clone, pct, format_size(sent), format_size(file_size_clone));
+                                    // CMD 兼容：用空格清除旧内容
+                                    print!("\r📤 {} {}% [{}/{}]                    ", file_name_clone, pct, format_size(sent), format_size(file_size_clone));
                                     use std::io::Write;
                                     std::io::stdout().flush().ok();
                                 }
